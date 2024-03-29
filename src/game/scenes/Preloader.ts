@@ -17,6 +17,8 @@ export class Preloader extends Scene
         this.load.image('walltileslow', 'tiles/atlas_walls_low-16x16.png');
         this.load.tilemapTiledJSON('dungeon', 'tiles/dungeon-01.json');
 
+        this.load.atlas('knight','characters/knight/knight.png','characters/knight/knight.json');
+
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'star.png');
     }
