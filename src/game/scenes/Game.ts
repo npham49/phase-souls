@@ -1,32 +1,41 @@
-import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 
 export class Game extends Scene
 {
-    camera: Phaser.Cameras.Scene2D.Camera;
-    background: Phaser.GameObjects.Image;
-    gameText: Phaser.GameObjects.Text;
-
     constructor ()
     {
         super('Game');
     }
 
+    preload() {
+
+    }
     create ()
     {
-        this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
+        const map = this.make.tilemap({ key: 'dungeon' });
+        const tileset = map.addTilesetImage('atlas_floor-16x16','tiles');
+        const walltileslow = map.addTilesetImage('atlas_walls_low-16x16','walltileslow');
+        const walltileshigh = map.addTilesetImage('atlas_walls_high-16x32','walltileshigh');
+        map.createLayer('Ground', [(tileset as Phaser.Tilemaps.Tileset), (walltileslow as Phaser.Tilemaps.Tileset), (walltileshigh as Phaser.Tilemaps.Tileset)],0,0)as Phaser.Tilemaps.TilemapLayer;
+        const wallsLayer = map.createLayer('Walls', [(tileset as Phaser.Tilemaps.Tileset), (walltileslow as Phaser.Tilemaps.Tileset), (walltileshigh as Phaser.Tilemaps.Tileset)],0,0)as Phaser.Tilemaps.TilemapLayer;
+        const textureLayer = map.createLayer('Texture', [(tileset as Phaser.Tilemaps.Tileset), (walltileslow as Phaser.Tilemaps.Tileset), (walltileshigh as Phaser.Tilemaps.Tileset)],0,0)as Phaser.Tilemaps.TilemapLayer;
 
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        wallsLayer.setCollisionByProperty({ collides: true})
+        textureLayer.setCollisionByProperty({ collides: true})
 
-        this.gameText = this.add.text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
-
-        EventBus.emit('current-scene-ready', this);
+        // Debug collision
+        const debugGraphics = this.add.graphics().setAlpha(0.7);
+        console.log(debugGraphics.clear())
+        wallsLayer.renderDebug(debugGraphics, {
+            tileColor: null, // Non-colliding tiles
+            collidingTileColor: new Phaser.Display.Color(243, 134, 48, 200), // Colliding tiles
+            faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Colliding face edges
+        });
+        textureLayer.renderDebug(debugGraphics, {
+            tileColor: null, // Non-colliding tiles
+            collidingTileColor: new Phaser.Display.Color(243, 134, 48, 200), // Colliding tiles
+            faceColor: new Phaser.Display.Color(40, 39, 37, 255) // Colliding face edges
+        });
     }
 
     changeScene ()
