@@ -1,9 +1,11 @@
 import { Scene } from "phaser";
-import { getNormalization } from "../../utils/vectors";
+import '../../characters/knight'
+import Knight from "../../characters/knight";
+import { createCharacterAnims } from "../../anims/KnightAnims";
 
 export class Game extends Scene {
     private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-    private knight!: Phaser.Physics.Arcade.Sprite;
+    private knight!: Knight;
 
     constructor() {
         super("Game");
@@ -13,6 +15,9 @@ export class Game extends Scene {
         this.cursors = this.input.keyboard!.createCursorKeys();
     }
     create() {
+
+        createCharacterAnims(this.anims);
+
         const map = this.make.tilemap({ key: "dungeon" });
         const tileset = map.addTilesetImage("atlas_floor-16x16", "tiles");
         const walltileslow = map.addTilesetImage(
@@ -71,107 +76,23 @@ export class Game extends Scene {
             faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Colliding face edges
         });
 
-        this.knight = this.physics.add.sprite(
+        this.knight = this.add.knight(
             342,
             42,
             "knight",
             "knight_f_idle_anim_f1.png"
         );
-        this.knight.body!.setSize(
-            this.knight.width * 1,
-            this.knight.height * 0.25
-        );
-        this.knight.body!.setOffset(0, 20);
-
-        this.anims.create({
-            key: "knight-idle",
-            frames: this.anims.generateFrameNames("knight", {
-                prefix: "knight_f_idle_anim_f",
-                suffix: ".png",
-                start: 0,
-                end: 1,
-            }),
-            frameRate: 4,
-            repeat: -1,
-        });
-
-        this.anims.create({
-            key: "knight-run-sideway",
-            frames: this.anims.generateFrameNames("knight", {
-                prefix: "knight_f_run_anim_f",
-                suffix: ".png",
-                start: 0,
-                end: 3,
-            }),
-            frameRate: 8,
-            repeat: -1,
-        });
-
-        this.anims.create({
-            key: "knight-run-up",
-            frames: this.anims.generateFrameNames("knight", {
-                prefix: "knight_f_run_up_anim_f",
-                suffix: ".png",
-                start: 1,
-                end: 4,
-            }),
-            frameRate: 8,
-            repeat: -1,
-        });
-
-        this.anims.create({
-            key: "knight-run-down",
-            frames: this.anims.generateFrameNames("knight", {
-                prefix: "knight_f_run_down_anim_f",
-                suffix: ".png",
-                start: 1,
-                end: 4,
-            }),
-            frameRate: 8,
-            repeat: -1,
-        });
-
-        this.knight.play("knight-idle");
+        
 
         this.physics.add.collider(this.knight, wallsLayer);
         this.physics.add.collider(this.knight, textureLayer);
     }
     update() {
-        let dx = 0;
-        let dy = 0;
-        if (!this.cursors || !this.knight) return;
-        this.knight.setVelocity(0, 0);
-        // this.knight.anims.play(`knight-idle`, true);
-        this.cameras.main.startFollow(this.knight);
-
-        const speed = 150;
-        if (this.cursors.left?.isDown) {
-            this.knight.setFlipX(true);
-            dx = -1;
-            // stops the idle animation
-            this.knight.anims.play("knight-run-sideway", true);
-        } else
-        if (this.cursors.right?.isDown) {
-            this.knight.setFlipX(false);
-            dx = 1;
-            this.knight.anims.play("knight-run-sideway", true);
-        }
-        if (this.cursors.up?.isDown) {
-            this.knight.setFlipX(false);
-            dy = -1;
-            this.knight.anims.play("knight-run-up", true);
-        } else
-        if (this.cursors.down?.isDown) {
-            this.knight.setFlipX(false);
-            dy = 1;
-            this.knight.anims.play("knight-run-down", true);
-        }
-        if (dx === 0 && dy === 0) {
-            this.knight.anims.play("knight-idle", true);
-        }
-
-        const normalization = getNormalization(dx, dy);
-        this.knight.setVelocity(dx * speed * normalization, dy * speed * normalization);
+        if (this.knight)
+		{
+            this.cameras.main.startFollow(this.knight);
+			this.knight.update(this.cursors)
+		}
     }
 
     changeScene() {
